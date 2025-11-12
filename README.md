@@ -155,35 +155,9 @@ Each execution generates:
 - `all_processed_links.json` - Complete history of processed articles
 - `summaries/summary-{timestamp}.txt` - Archived summaries
 
----
-
-## 🐛 Troubleshooting
-
-### Issue: "GEMINI_API_KEY environment variable missing"
-**Solution**: Ensure you provide the API key when executing the flow.
-
-### Issue: Database connection errors
-**Solution**: Verify PostgreSQL is running:
-```bash
-docker ps | grep postgres
-```
-
-### Issue: No articles fetched
-**Solution**: Check if the category names are valid (see Available Categories section).
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-## 📄 License
-
-This project is open-source and available under the MIT License.
-
----
 
 ## 🙏 Acknowledgments
 
@@ -199,4 +173,4 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ using Kestra and Gemini AI**
+**Built with ❤️ using Kestra**
