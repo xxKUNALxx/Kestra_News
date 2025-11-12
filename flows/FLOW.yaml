@@ -1,0 +1,104 @@
+id: toi_news_summary
+namespace: company.team
+description: |
+  Automated workflow to fetch and summarize Times of India RSS feeds using Gemini 2.0 Flash Lite.
+  Runs hourly, supports custom prompts, saves summaries in PostgreSQL, and avoids reprocessing already summarized news.
+
+inputs:
+  - id: categories
+    type: STRING
+    description: "Comma-separated list of TOI categories (e.g. world,technology)"
+    defaults: "world,technology"
+
+  - id: gemini_api_key
+    type: STRING
+    description: "Enter your Gemini API Key"
+    required: true
+
+  - id: prompt
+    type: STRING
+    description: "Custom summarization instruction for Gemini"
+    defaults: "Summarize these news articles in 3 short bullet points, highlighting key updates."
+
+tasks:
+  # Log start
+  - id: start_log
+    type: io.kestra.plugin.core.log.Log
+    message: |
+          Starting TOI Summarization Workflow
+          Time: {{ now() }}
+          Categories: {{ inputs.categories }}
+
+  # Step 2: Fetch TOI RSS feeds
+  - id: fetch_feeds
+    type: io.kestra.plugin.scripts.python.Script
+    runner: PROCESS
+    containerImage: python:3.11-slim
+    beforeCommands:
+      - apt-get update && apt-get install -y ca-certificates curl && update-ca-certificates
+      - pip install feedparser==6.0.11 requests
+    env:
+      CATEGORIES: "{{ inputs.categories }}"
+    inputFiles:
+      fetch_feeds.py: "{{ read('fetch_feeds.py') }}"
+    script: |
+      import fetch_feeds
+      fetch_feeds.main()
+    outputFiles:
+      - "toi_rss_output.json"
+
+  # Summarize using Gemini + Store in PostgreSQL
+  - id: summarize_feeds
+    type: io.kestra.plugin.scripts.python.Script
+    runner: PROCESS
+    containerImage: python:3.11-slim
+    beforeCommands:
+      - pip install requests psycopg2-binary
+    env:
+      GEMINI_API_KEY: "{{ inputs.gemini_api_key }}"
+      CUSTOM_PROMPT: "{{ inputs.prompt }}"
+      DATABASE_URL: "postgresql://kestra:k3str4@host.docker.internal:5432/kestra"
+    inputFiles:
+      summarize_feeds.py: "{{ read('summarize_feeds.py') }}"
+      toi_rss_output.json: "{{ outputs.fetch_feeds.outputFiles['toi_rss_output.json'] }}"
+    script: |
+      import summarize_feeds
+      summarize_feeds.main()
+    outputFiles:
+      - "summary.txt"
+      - "all_processed_links.json"
+
+  #  Log the completion
+  - id: show_summary
+    type: io.kestra.plugin.core.log.Log
+    message: |
+      ✅ Summarization completed successfully!
+      🧠 Categories processed: {{ inputs.categories }}
+      🕒 Completed at: {{ now() }}
+      📁 Output files generated:
+        - RSS Feed: toi_rss_output.json
+        - Summary File: summary.txt
+        - Processed Links: all_processed_links.json
+
+  #   Archive summary
+  - id: archive_summary
+    type: io.kestra.plugin.scripts.python.Script
+    runner: PROCESS
+    containerImage: python:3.11-slim
+    inputFiles:
+      summary.txt: "{{ outputs.summarize_feeds.outputFiles['summary.txt'] }}"
+    script: |
+      import os, shutil
+      from datetime import datetime
+      ts = datetime.now().strftime("%d%m%Y.%H.%M.%S")
+      os.makedirs("summaries", exist_ok=True)
+      shutil.copy("summary.txt", f"summaries/summary-{ts}.txt")
+      print(f" Archived as summaries/summary-{ts}.txt")
+    outputFiles:
+      - "summaries/summary-*.txt"
+
+triggers:
+  - id: hourly_trigger
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 * * * *"
+    description: "Runs every hour to fetch and summarize latest TOI news."
