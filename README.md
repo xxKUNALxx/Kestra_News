@@ -125,7 +125,6 @@ Kestra_News/
    - Sends new articles to Gemini API
    - Stores summaries in database
 4. **Show Summary**: Logs completion details
-5. **Archive Summary**: Creates timestamped backup files
 
 ---
 
