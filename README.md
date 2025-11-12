@@ -9,9 +9,11 @@ An automated news aggregation and summarization workflow powered by **Kestra**, 
 - **Multi-Category RSS Fetching**: Supports 11 TOI categories (World, Technology, Business, Sports, etc.)
 - **AI-Powered Summarization**: Uses Google Gemini 2.0 Flash Lite for intelligent article summaries
 - **Smart Deduplication**: PostgreSQL tracks processed articles to prevent redundant summarization
+- **Organized Output Structure**: Category-wise folders with timestamped files
+- **Token Optimization**: Randomly selects 2 articles per category to reduce API costs
 - **Customizable Prompts**: Configure your own summarization instructions
 - **Automated Scheduling**: Runs every hour via Kestra triggers
-- **Archival System**: Timestamped summary files for historical tracking
+- **Complete History Tracking**: `all_processed_links.json` maintains full article history from database
 - **Dockerized Setup**: Complete containerized environment with PostgreSQL and Kestra
 
 ---
@@ -119,12 +121,17 @@ Kestra_News/
 ## 🔄 Workflow Steps
 
 1. **Start Log**: Records execution timestamp and parameters
-2. **Fetch Feeds**: Retrieves RSS feeds from TOI for selected categories
+2. **Fetch Feeds**: 
+   - Retrieves RSS feeds from TOI for selected categories
+   - Randomly selects 2 articles per category to optimize API usage
+   - Outputs `toi_rss_output.json`
 3. **Summarize Feeds**: 
-   - Checks PostgreSQL for already-processed articles
-   - Sends new articles to Gemini API
-   - Stores summaries in database
-4. **Show Summary**: Logs completion details
+   - Checks PostgreSQL for already-processed articles (deduplication)
+   - Sends only new articles to Gemini API for summarization
+   - Stores summaries in database with unique link constraint
+   - Creates category-wise folders with timestamped files
+   - Generates `all_processed_links.json` from complete DB history
+4. **Show Summary**: Logs completion details and output locations
 
 ---
 
@@ -147,16 +154,56 @@ CREATE TABLE news_summaries (
 
 ## 📊 Output Files
 
-Each execution generates:
+Each execution generates organized output in category-wise folders:
 
-- `toi_rss_output.json` - Raw RSS feed data
-- `summary.txt` - Latest summarization results
-- `all_processed_links.json` - Complete history of processed articles
-- `summaries/summary-{timestamp}.txt` - Archived summaries
+```
+output/
+├── world/
+│   ├── summary-13112025.14.30.45.txt    # Timestamped summaries
+│   └── links-13112025.14.30.45.json     # Article links
+├── technology/
+│   ├── summary-13112025.14.30.45.txt
+│   └── links-13112025.14.30.45.json
+├── toi_rss_output.json                  # Raw RSS feed data
+└── all_processed_links.json             # Complete history from DB
+```
+
+**File Descriptions:**
+- `{category}/summary-{timestamp}.txt` - AI-generated summaries for each category
+- `{category}/links-{timestamp}.json` - Article titles and URLs for each category
+- `toi_rss_output.json` - Raw RSS feed data from TOI
+- `all_processed_links.json` - Complete history of all processed articles from PostgreSQL
 
 
 ---
 
+## 🐛 Troubleshooting
+
+### Issue: "GEMINI_API_KEY environment variable missing"
+**Solution**: Ensure you provide the API key when executing the flow.
+
+### Issue: Database connection errors
+**Solution**: Verify PostgreSQL is running:
+```bash
+docker ps | grep postgres
+```
+
+### Issue: No articles fetched
+**Solution**: Check if the category names are valid (see Available Categories section).
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📄 License
+
+This project is open-source and available under the MIT License.
+
+---
 
 ## 🙏 Acknowledgments
 
@@ -172,4 +219,4 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ using Kestra**
+**Built with ❤️ using Kestra and Gemini AI**
