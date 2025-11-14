@@ -1,10 +1,10 @@
-# 📰 Kestra News Summarizer
+#  Kestra News Summarizer
 
 An automated news aggregation and summarization workflow powered by **Kestra**, **Google Gemini 2.0 Flash Lite**, and **PostgreSQL**. This project fetches Times of India RSS feeds hourly, generates AI-powered summaries, and stores them in a database to avoid duplicate processing.
 
 ---
 
-## 🚀 Features
+##  Features
 
 - **Multi-Category RSS Fetching**: Supports 11 TOI categories (World, Technology, Business, Sports, etc.)
 - **AI-Powered Summarization**: Uses Google Gemini 2.0 Flash Lite for intelligent article summaries
@@ -18,7 +18,7 @@ An automated news aggregation and summarization workflow powered by **Kestra**, 
 
 ---
 
-## 📋 Prerequisites
+##  Prerequisites
 
 - **Docker** and **Docker Compose** installed
 - **Google Gemini API Key** ([Get one here](https://aistudio.google.com/app/apikey))
@@ -26,7 +26,7 @@ An automated news aggregation and summarization workflow powered by **Kestra**, 
 
 ---
 
-## 🛠️ Installation & Setup
+##  Installation & Setup
 
 ### 1. Clone the Repository
 
@@ -61,7 +61,7 @@ http://localhost:8080
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 ### Environment Variables
 
@@ -82,7 +82,7 @@ entertainment, lifestyle, education, environment, science
 
 ---
 
-## 🎯 Usage
+##  Usage
 
 ### Manual Execution
 
@@ -103,7 +103,7 @@ To modify the schedule, edit the `triggers` section in `FLOW.yaml`.
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 Kestra_News/
@@ -118,7 +118,7 @@ Kestra_News/
 
 ---
 
-## 🔄 Workflow Steps
+##  Workflow Steps
 
 1. **Start Log**: Records execution timestamp and parameters
 2. **Fetch Feeds**: 
@@ -135,7 +135,7 @@ Kestra_News/
 
 ---
 
-## 💾 Database Schema
+##  Database Schema
 
 The workflow automatically creates this table:
 
@@ -178,7 +178,7 @@ output/
 ---
 
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - **Kestra** - Workflow orchestration platform
 - **Google Gemini** - AI summarization
@@ -186,6 +186,4 @@ output/
 
 
 
----
 
-**Built with ❤️ using Kestra **
